@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import axios from 'axios'
+import MainPage from '@/views/MainPage.vue'
+import MoviePage from '@/views/MoviePage.vue'
+import SearchPage from '@/views/SearchPage.vue'
 
 axios.defaults.baseURL =
   process.env.NODE_ENV === 'development'
@@ -9,16 +12,18 @@ axios.defaults.baseURL =
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView
+    name: 'main',
+    component: MainPage
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    path: '/movie/:id',
+    name: 'movie',
+    component: MoviePage
+  },
+  {
+    path: '/search',
+    name: 'search',
+    component: SearchPage
   }
 ]
 
