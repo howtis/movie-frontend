@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import axios from 'axios'
+
+axios.defaults.baseURL =
+  process.env.NODE_ENV === 'development'
+    ? '/'
+    : 'http://backend'
 
 const routes: Array<RouteRecordRaw> = [
   {
