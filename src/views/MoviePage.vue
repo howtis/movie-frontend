@@ -94,7 +94,7 @@ export default defineComponent({
 
     getPosterPath (posterPath: Movie['poster_path']) {
       const imagePath = process.env.VUE_APP_TMDB_IMAGE_PATH
-      return imagePath + '/w154' + posterPath
+      return imagePath + '/w342' + posterPath
     },
 
     async fetchMovieData () {
