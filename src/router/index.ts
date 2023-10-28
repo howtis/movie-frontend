@@ -1,13 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import axios from 'axios'
 import MainPage from '@/views/MainPage.vue'
 import MoviePage from '@/views/MoviePage.vue'
 import SearchPage from '@/views/SearchPage.vue'
-
-axios.defaults.baseURL =
-  process.env.NODE_ENV === 'development'
-    ? '/'
-    : 'http://backend'
 
 const routes: Array<RouteRecordRaw> = [
   {
