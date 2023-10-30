@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, toRaw } from 'vue'
 import SearchBox from '@/components/SearchBox.vue'
 import SearchResults from '@/components/SearchResults.vue'
 import { InfiniteLoading } from 'infinite-loading-vue3-ts'
@@ -41,9 +41,8 @@ export default defineComponent({
     async loadResults ($state) {
       const response = await axios.get(`/api/search?query=${this.$route.query.q}&page=${++this.page}`)
       const searchResults = response.data.results.filter((movie) => movie.poster_path !== null)
-      const results = JSON.parse(JSON.stringify(this.results))
 
-      this.results = results.concat(searchResults)
+      this.results = toRaw(this.results).concat(searchResults)
       this.fetchDone = true
 
       response.data.total_pages > this.page
