@@ -19,18 +19,21 @@
       </div>
     </section>
   </main>
+
+  <Footer/>
 </template>
 
 <script>
 import { defineComponent, toRaw } from 'vue'
 import SearchBox from '@/components/SearchBox.vue'
 import SearchResults from '@/components/SearchResults.vue'
+import Footer from '@/components/MainFooter.vue'
 import { InfiniteLoading } from 'infinite-loading-vue3-ts'
 import axios from 'axios'
 
 export default defineComponent({
   name: 'searchPage',
-  components: { SearchResults, SearchBox, InfiniteLoading },
+  components: { SearchResults, SearchBox, InfiniteLoading, Footer },
   watch: { $route: 'queryChange' },
 
   data () {

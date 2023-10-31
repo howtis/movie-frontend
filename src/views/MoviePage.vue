@@ -51,8 +51,9 @@
         <ReviewResults :reviews="reviews"/>
       </div>
     </section>
-
   </main>
+
+  <Footer/>
 </template>
 
 <script lang="ts">
@@ -62,6 +63,7 @@ import VideoSwiper from '@/components/VideoSwiper.vue'
 import PosterSwiper from '@/components/PosterSwiper.vue'
 import StarRating from '@/components/StarRating.vue'
 import ReviewResults from '@/components/ReviewResults.vue'
+import Footer from '@/components/MainFooter.vue'
 import axios from 'axios'
 import { Movie } from '@/types/Movie'
 import { Review } from '@/types/Review'
@@ -69,7 +71,7 @@ import { countBytes, isEmpty } from '@/util/util'
 
 export default defineComponent({
   name: 'moviePage',
-  components: { PosterSwiper, VideoSwiper, SearchBox, ReviewResults, StarRating },
+  components: { PosterSwiper, VideoSwiper, SearchBox, ReviewResults, StarRating, Footer },
   watch: { $route: 'fetchMovieData' },
 
   data () {
