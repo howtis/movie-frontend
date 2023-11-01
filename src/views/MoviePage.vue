@@ -138,7 +138,7 @@ export default defineComponent({
       const movieId = this.$route.params.id.toString()
 
       const MAX_LENGTH = 255
-      if (this.reviewComment.length === 0) return
+      if (this.reviewComment.trim().length === 0) return
       if (countBytes(this.reviewComment) > MAX_LENGTH) {
         this.reviewComment = this.reviewComment.slice(0, MAX_LENGTH)
       }

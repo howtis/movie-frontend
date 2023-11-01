@@ -25,6 +25,7 @@ export default defineComponent({
   },
   methods: {
     search () {
+      if (this.query.trim().length === 0) return
       this.$router.push({ name: 'search', query: { q: this.query } })
     }
   }
