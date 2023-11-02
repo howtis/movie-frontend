@@ -11,11 +11,11 @@
     <b-button variant="outline-secondary" @click="submitReview">등록</b-button>
   </div>
   <b-form-textarea v-model="reviewComment" rows="4" placeholder="리뷰를 입력해주세요" no-resize/>
+  <p :style="commentLength">{{ reviewComment.trim().length }} / {{ this.COMMENT_MAX_LENGTH }}</p>
 </template>
 
 <script lang="ts">
 import { defineComponent, toRaw } from 'vue'
-import { countBytes } from '@/util/util'
 import { Review } from '@/types/Review'
 import StarRating from '@/components/widgets/StarRating.vue'
 import axios from 'axios'
@@ -32,31 +32,32 @@ export default defineComponent({
       reviewAverage: 0,
       reviewComment: '',
       reviewCount: 0,
-      reviewRate: 0
+      reviewRate: 0,
+      COMMENT_MAX_LENGTH: 255
     }
   },
 
   methods: {
     submitReview () {
       const movieId = this.$route.params.id.toString()
+      let comment = this.reviewComment.trim()
 
-      const MAX_LENGTH = 255
-      if (this.reviewComment.trim().length === 0) return
-      if (countBytes(this.reviewComment) > MAX_LENGTH) {
-        this.reviewComment = this.reviewComment.slice(0, MAX_LENGTH)
+      if (comment.length === 0) return
+      if (comment.length > this.COMMENT_MAX_LENGTH) {
+        comment = comment.slice(0, this.COMMENT_MAX_LENGTH)
       }
+
       const review: Review = {
         movie_id: movieId,
-        comment: this.reviewComment,
+        comment: comment,
         rating: this.reviewRate,
         created_at: new Date()
       }
+
       axios.post('/api/review/create', review)
         .then(() => {
           this.refreshReview()
           this.$emit('update:review')
-        }).catch(error => {
-          console.error(error)
         })
     },
 
@@ -66,6 +67,16 @@ export default defineComponent({
       this.reviewCount = reviews.length
       this.reviewAverage = totalRating / (this.reviewCount || 1)
       this.reviewComment = ''
+    }
+  },
+
+  computed: {
+    commentLength () {
+      return {
+        color: this.reviewComment.length > 255
+          ? 'red'
+          : 'inherit'
+      }
     }
   }
 })
