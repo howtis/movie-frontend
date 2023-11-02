@@ -4,4 +4,5 @@ export interface Review {
   created_at: Date
   movie_id: string
   rating: number
+  token: string | undefined
 }
