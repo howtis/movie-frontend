@@ -20,6 +20,10 @@ export default defineComponent({
     if (this.value) this.refresh(this.value)
   },
 
+  watch: {
+    value: function (value) { this.refresh(value) }
+  },
+
   props: {
     size: String,
     rateText: Boolean,

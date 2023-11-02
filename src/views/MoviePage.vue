@@ -22,12 +22,16 @@
 
     <section class="content reviews">
       <div>
-        <ReviewSubmit :reviews="reviews" @update:review="refreshReview" />
+        <ReviewSubmit :reviewRating="reviewRating" :reviewCount="reviewCount"
+                      @update:review="() => refreshReview(1, true /* first page, submit */)" />
       </div>
 
       <hr>
       <div class="mb-5">
         <ReviewResults :reviews="reviews" />
+        <Pagination v-if="this.reviewCount > reviewPaging"
+                    :total-rows="this.reviewCount" :page="reviewPage" :paging="reviewPaging"
+                    @update:page="(page) => refreshReview(page)" />
       </div>
     </section>
   </main>
@@ -43,6 +47,7 @@ import VideoSwiper from '@/components/widgets/VideoSwiper.vue'
 import PosterSwiper from '@/components/widgets/PosterSwiper.vue'
 import ReviewSubmit from '@/components/review/ReviewSubmit.vue'
 import ReviewResults from '@/components/review/ReviewResults.vue'
+import Pagination from '@/components/widgets/PaginationComponent.vue'
 import Footer from '@/components/MainFooter.vue'
 import axios from 'axios'
 import { Movie } from '@/types/Movie'
@@ -50,11 +55,22 @@ import { isEmpty } from '@/util/util'
 
 export default defineComponent({
   name: 'moviePage',
-  components: { SearchBox, MovieDetail, PosterSwiper, VideoSwiper, ReviewSubmit, ReviewResults, Footer },
-  watch: { $route: 'fetchMovieData' },
+  components: { SearchBox, MovieDetail, PosterSwiper, VideoSwiper, ReviewSubmit, ReviewResults, Pagination, Footer },
+  watch: {
+    $route: 'fetchMovieData'
+  },
 
   data () {
-    return { detail: {}, reviews: [], similar: [], videos: [] }
+    return {
+      detail: {},
+      reviews: [],
+      similar: [],
+      videos: [],
+      reviewRating: 0,
+      reviewCount: 0,
+      reviewPage: 1,
+      reviewPaging: 5
+    }
   },
 
   mounted () {
@@ -66,17 +82,20 @@ export default defineComponent({
 
     async fetchMovieData () {
       const movieId = this.$route.params.id.toString()
-      const [detail, videos, similar, reviews] = await Promise.all([
+      const [detail, videos, similar, reviews, rating] = await Promise.all([
         this.fetchMovieDetail(movieId),
         this.fetchMovieVideos(movieId),
         this.fetchMovieSimilar(movieId),
-        this.fetchReviews(movieId)
+        this.fetchReviews(movieId, 1 /* first page */),
+        this.fetchReviewRating(movieId)
       ])
 
       this.detail = detail
       this.videos = videos
       this.similar = similar
-      this.reviews = reviews
+      this.reviews = reviews.content
+      this.reviewCount = reviews.totalElements
+      this.reviewRating = rating
     },
 
     async fetchMovieDetail (id: string) {
@@ -94,14 +113,31 @@ export default defineComponent({
       return response.data.results
     },
 
-    async fetchReviews (id: string): Promise<never[]> {
-      const response = await axios.get('/api/review/list/' + id)
+    async fetchReviews (id: string, page: number) {
+      const response = await axios.get('/api/review/list/' + id, {
+        params: { page: page - 1, size: this.reviewPaging }
+      })
       return response.data
     },
 
-    async refreshReview () {
-      const movieId = this.$route.params.id.toString()
-      this.reviews = await this.fetchReviews(movieId)
+    async fetchReviewRating (id: string) {
+      const response = await axios.get('/api/review/rating/' + id)
+      return response.data
+    },
+
+    async refreshReview (page: number, submit?: boolean) {
+      const id = this.$route.params.id.toString()
+      const reviews = await this.fetchReviews(id, page)
+
+      this.reviews = reviews.content
+      this.reviewCount = reviews.totalElements
+      this.reviewPage = page
+
+      if (submit) await this.refreshReviewRating(id)
+    },
+
+    async refreshReviewRating (id: string) {
+      this.reviewRating = await this.fetchReviewRating(id)
     }
   }
 })
