@@ -2,18 +2,8 @@
   <main>
     <SearchBox/>
 
-    <section v-if="!isEmpty(detail)" class="content info d-sm-flex">
-      <div class="poster-wrapper">
-        <img class="m-sm-auto d-sm-block" :src="getPosterPath(detail.poster_path)" :alt="detail.title">
-      </div>
-      <div class="info-wrapper">
-        <h1 class="title">{{ detail.title }} ({{ new Date(detail.release_date).getFullYear() }})</h1>
-        <span class="genres">🎬{{ detail.genres.map(genre => genre.name).join(', ') }}</span>
-        <span class="runtime m-3">⏰{{ detail.runtime }}분</span>
-        <span class="date">📅️{{ detail.release_date }}</span>
-        <h3 class="tagline mt-5">{{ detail.tagline }}</h3>
-        <h5 class="overview">{{ detail.overview }}</h5>
-      </div>
+    <section v-if="!isEmpty(detail)" class="content info">
+      <MovieDetail :detail="detail" />
     </section>
 
     <section v-if="!isEmpty(videos)" class="content video">
@@ -32,23 +22,12 @@
 
     <section class="content reviews">
       <div>
-        <h4>평점
-          <span v-if="this.reviewCount > 0">
-            {{ this.reviewAverage.toFixed(2) }}점 ({{ this.reviewCount }}명)
-          </span>
-        </h4>
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <star-rating :size="'xl'" :rateText="true" :value="3"
-            v-model="reviewRate" @update:score="reviewRate = $event"
-          />
-          <b-button variant="outline-secondary" @click="submitReview">등록</b-button>
-        </div>
-        <b-form-textarea v-model="reviewComment" rows="4" placeholder="리뷰를 입력해주세요" no-resize/>
+        <ReviewSubmit :reviews="reviews" @update:review="refreshReview" />
       </div>
 
       <hr>
       <div class="mb-5">
-        <ReviewResults :reviews="reviews"/>
+        <ReviewResults :reviews="reviews" />
       </div>
     </section>
   </main>
@@ -58,33 +37,24 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import SearchBox from '@/components/SearchBox.vue'
-import VideoSwiper from '@/components/VideoSwiper.vue'
-import PosterSwiper from '@/components/PosterSwiper.vue'
-import StarRating from '@/components/StarRating.vue'
-import ReviewResults from '@/components/ReviewResults.vue'
+import SearchBox from '@/components/search/SearchBox.vue'
+import MovieDetail from '@/components/movie/MovieDetail.vue'
+import VideoSwiper from '@/components/widgets/VideoSwiper.vue'
+import PosterSwiper from '@/components/widgets/PosterSwiper.vue'
+import ReviewSubmit from '@/components/review/ReviewSubmit.vue'
+import ReviewResults from '@/components/review/ReviewResults.vue'
 import Footer from '@/components/MainFooter.vue'
 import axios from 'axios'
 import { Movie } from '@/types/Movie'
-import { Review } from '@/types/Review'
-import { countBytes, isEmpty } from '@/util/util'
+import { isEmpty } from '@/util/util'
 
 export default defineComponent({
   name: 'moviePage',
-  components: { PosterSwiper, VideoSwiper, SearchBox, ReviewResults, StarRating, Footer },
+  components: { SearchBox, MovieDetail, PosterSwiper, VideoSwiper, ReviewSubmit, ReviewResults, Footer },
   watch: { $route: 'fetchMovieData' },
 
   data () {
-    return {
-      detail: {},
-      reviewAverage: 0,
-      reviewComment: '',
-      reviewCount: 0,
-      reviewRate: 0,
-      reviews: [],
-      similar: [],
-      videos: []
-    }
+    return { detail: {}, reviews: [], similar: [], videos: [] }
   },
 
   mounted () {
@@ -93,11 +63,6 @@ export default defineComponent({
 
   methods: {
     isEmpty,
-
-    getPosterPath (posterPath: Movie['poster_path']) {
-      const imagePath = process.env.VUE_APP_TMDB_IMAGE_PATH
-      return imagePath + '/w342' + posterPath
-    },
 
     async fetchMovieData () {
       const movieId = this.$route.params.id.toString()
@@ -111,7 +76,7 @@ export default defineComponent({
       this.detail = detail
       this.videos = videos
       this.similar = similar
-      this.refreshReview(reviews)
+      this.reviews = reviews
     },
 
     async fetchMovieDetail (id: string) {
@@ -134,48 +99,10 @@ export default defineComponent({
       return response.data
     },
 
-    submitReview () {
+    async refreshReview () {
       const movieId = this.$route.params.id.toString()
-
-      const MAX_LENGTH = 255
-      if (this.reviewComment.trim().length === 0) return
-      if (countBytes(this.reviewComment) > MAX_LENGTH) {
-        this.reviewComment = this.reviewComment.slice(0, MAX_LENGTH)
-      }
-      const review: Review = {
-        movie_id: movieId,
-        comment: this.reviewComment,
-        rating: this.reviewRate,
-        created_at: new Date()
-      }
-      axios.post('/api/review/create', review)
-        .then(async () => {
-          this.refreshReview(await this.fetchReviews(movieId))
-          this.reviewComment = ''
-        }).catch(error => { console.error(error) })
-    },
-
-    refreshReview (reviews: never[]) {
-      this.reviews = reviews
-      const totalRating = reviews.reduce((sum: number, review: Review) => sum + review.rating, 0)
-      this.reviewCount = reviews.length
-      this.reviewAverage = totalRating / (this.reviewCount || 1)
+      this.reviews = await this.fetchReviews(movieId)
     }
   }
 })
 </script>
-
-<style scoped lang="scss">
-.poster-wrapper img {
-  border-radius: 4px;
-  box-shadow: 4px 4px 4px #aaa;
-
-  width: 18rem; height: 27rem;
-  @media (max-width: 576px) {
-    width: 15rem; height: 22.5rem;
-  }
-}
-.info-wrapper {
-  .tagline, .overview { font-weight: lighter }
-}
-</style>

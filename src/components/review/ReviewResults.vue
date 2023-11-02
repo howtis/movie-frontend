@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import StarRating from '@/components/StarRating.vue'
+import StarRating from '@/components/widgets/StarRating.vue'
 
 export default defineComponent({
   components: { StarRating },
@@ -23,6 +23,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/scss/theme.scss';
-pre { font-family: $globalFont; white-space: pre }
+@import '@/assets/scss/theme';
+pre { font-family: $globalFont; white-space: pre-wrap }
 </style>

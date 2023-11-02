@@ -35,8 +35,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import PosterSwiper from '@/components/PosterSwiper.vue'
-import SearchBox from '@/components/SearchBox.vue'
+import PosterSwiper from '@/components/widgets/PosterSwiper.vue'
+import SearchBox from '@/components/search/SearchBox.vue'
 import Footer from '@/components/MainFooter.vue'
 import axios from 'axios'
 import { Movie } from '@/types/Movie'

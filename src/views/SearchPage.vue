@@ -25,8 +25,8 @@
 
 <script>
 import { defineComponent, toRaw } from 'vue'
-import SearchBox from '@/components/SearchBox.vue'
-import SearchResults from '@/components/SearchResults.vue'
+import SearchBox from '@/components/search/SearchBox.vue'
+import SearchResults from '@/components/search/SearchResults.vue'
 import Footer from '@/components/MainFooter.vue'
 import { InfiniteLoading } from 'infinite-loading-vue3-ts'
 import axios from 'axios'
