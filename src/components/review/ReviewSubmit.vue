@@ -11,12 +11,19 @@
     <b-button variant="outline-secondary" @click="submitReview">등록</b-button>
   </div>
   <b-form-textarea v-model="reviewComment" rows="4" placeholder="리뷰를 입력해주세요" no-resize/>
-  <p :style="commentLength">{{ reviewComment.trim().length }} / {{ this.COMMENT_MAX_LENGTH }}</p>
+  <div class="d-md-flex justify-content-between">
+    <p :style="commentLength">{{ reviewComment.trim().length }} / {{ this.COMMENT_MAX_LENGTH }}</p>
+    <p class="recaptcha">This site is protected by reCAPTCHA and the Google
+      <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+      <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+    </p>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, toRaw } from 'vue'
 import { Review } from '@/types/Review'
+import { useReCaptcha } from 'vue-recaptcha-v3'
 import StarRating from '@/components/widgets/StarRating.vue'
 import axios from 'axios'
 
@@ -37,8 +44,18 @@ export default defineComponent({
     }
   },
 
+  setup () {
+    const reCaptcha = useReCaptcha()
+    const recaptcha = async (): Promise<string | undefined> => {
+      await reCaptcha?.recaptchaLoaded()
+      return reCaptcha?.executeRecaptcha('submitReview')
+    }
+
+    return { recaptcha }
+  },
+
   methods: {
-    submitReview () {
+    async submitReview () {
       const movieId = this.$route.params.id.toString()
       let comment = this.reviewComment.trim()
 
@@ -51,7 +68,8 @@ export default defineComponent({
         movie_id: movieId,
         comment: comment,
         rating: this.reviewRate,
-        created_at: new Date()
+        created_at: new Date(),
+        token: await this.recaptcha()
       }
 
       axios.post('/api/review/create', review)
@@ -81,3 +99,10 @@ export default defineComponent({
   }
 })
 </script>
+
+<style scoped lang="scss">
+.recaptcha {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+</style>
