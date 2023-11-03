@@ -80,22 +80,23 @@ export default defineComponent({
   methods: {
     isEmpty,
 
-    async fetchMovieData () {
+    fetchMovieData () {
       const movieId = this.$route.params.id.toString()
-      const [detail, videos, similar, reviews, rating] = await Promise.all([
+      Promise.all([
         this.fetchMovieDetail(movieId),
         this.fetchMovieVideos(movieId),
         this.fetchMovieSimilar(movieId),
         this.fetchReviews(movieId, 1 /* first page */),
         this.fetchReviewRating(movieId)
-      ])
 
-      this.detail = detail
-      this.videos = videos
-      this.similar = similar
-      this.reviews = reviews.content
-      this.reviewCount = reviews.totalElements
-      this.reviewRating = rating
+      ]).then(([detail, videos, similar, reviews, rating]) => {
+        this.detail = detail
+        this.videos = videos
+        this.similar = similar
+        this.reviews = reviews.content
+        this.reviewCount = reviews.totalElements
+        this.reviewRating = rating
+      }).catch(() => this.$router.push('/'))
     },
 
     async fetchMovieDetail (id: string) {
